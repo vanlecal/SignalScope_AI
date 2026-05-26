@@ -7,8 +7,8 @@ export const runBusinessAgent = async (event) => {
     // 1. Fetch live web/news data
     const liveNews = await getBusinessNews(event);
 
-    // 2. Extract useful snippets
-    const organicResults = liveNews.organic || [];
+    // 2. Use returned news array directly
+    const organicResults = liveNews || [];
 
     const summarizedNews = organicResults
       .slice(0, 5)

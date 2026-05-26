@@ -136,16 +136,21 @@
 //   );
 // };
 
-
 import axios from "axios";
 
-export const analyzeWithGroq = async (event) => {
+export const analyzeWithGroq = async (
+  event,
+  summarizedNews
+) => {
 
   const prompt = `
-Analyze the following business event.
+Analyze the following business event and related live news.
 
 Event:
 ${event}
+
+Live News:
+${summarizedNews}
 
 Return ONLY valid JSON.
 
@@ -168,12 +173,21 @@ Expected structure:
 
       messages: [
         {
+          role: "system",
+          content:
+            "You are a business intelligence AI that analyzes live business news and returns structured JSON only."
+        },
+        {
           role: "user",
           content: prompt
         }
       ],
 
-      temperature: 0.2
+      temperature: 0.2,
+
+      response_format: {
+        type: "json_object"
+      }
     },
 
     {

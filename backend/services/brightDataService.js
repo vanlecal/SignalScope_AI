@@ -40,6 +40,7 @@ export const fetchBusinessNews = async () => {
   }
 };
 
+
 export const getBusinessNews = async (event) => {
   try {
     const encodedQuery = encodeURIComponent(event);
@@ -52,10 +53,6 @@ export const getBusinessNews = async (event) => {
         url: `https://www.google.com/search?q=${encodedQuery}&tbm=nws&brd_json=1`,
 
         format: "json",
-
-        method: "GET",
-
-        country: "us"
       },
       {
         headers: {
@@ -66,14 +63,14 @@ export const getBusinessNews = async (event) => {
     );
 
     // Parse the body string into JSON
-    const parsedBody = JSON.parse(response.data.body);
+    const parsed = JSON.parse(response.data.body);
 
-    console.log("Parsed Bright Data:", parsedBody);
+    console.log("Parsed Bright Data:", parsed);
 
-    // Return only the news array
-    return parsedBody.news || [];
+    return parsed.news || [];
 
   } catch (error) {
+
     console.log(
       "Bright Data Error:",
       error.response?.data || error.message
