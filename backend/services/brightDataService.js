@@ -39,3 +39,41 @@ export const fetchBusinessNews = async () => {
     throw error;
   }
 };
+
+
+
+export const getBusinessNews = async () => {
+
+  try {
+
+    const response = await axios.post(
+      "https://api.brightdata.com/request",
+
+      {
+        zone: process.env.BRIGHTDATA_ZONE,
+
+        url: "https://www.google.com/search?q=latest+global+business+news&brd_json=1",
+
+        format: "raw"
+      },
+
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.BRIGHTDATA_API_KEY}`,
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    return response.data;
+
+  } catch (error) {
+
+    console.log(
+      "Bright Data Error:",
+      error.response?.data || error.message
+    );
+
+    throw error;
+  }
+};
