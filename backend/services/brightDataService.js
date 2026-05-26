@@ -1,0 +1,41 @@
+import axios from "axios";
+
+export const fetchBusinessNews = async () => {
+
+  try {
+
+    const response = await axios.post(
+      "https://api.brightdata.com/request",
+
+      {
+        zone: process.env.BRIGHTDATA_SERP_ZONE,
+
+        url: "https://www.google.com/search?q=latest+global+business+news&brd_json=1",
+
+        format: "json",
+
+        method: "GET",
+
+        country: "us"
+      },
+
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.BRIGHTDATA_API_KEY}`,
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    return response.data;
+
+  } catch (error) {
+
+    console.error(
+      "Bright Data Error:",
+      error.response?.data || error.message
+    );
+
+    throw error;
+  }
+};
