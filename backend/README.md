@@ -80,26 +80,27 @@ Frontend receives:
 
 ```bash
 backend/
-│
-├── controllers/
+├── controllers/       # Handles API request logic
+│   ├── agentController.js
+│   ├── analysisController.js
 │   └── liveFeedController.js
-│
-├── services/
-│   └── brightDataService.js
-│
-├── routes/
+├── routes/            # Defines API routes
+│   ├── agentRoutes.js
+│   ├── analysisRoutes.js
 │   └── liveFeedRoutes.js
-│
-├── config/
-│
-├── middleware/
-│
-├── utils/
-│
-├── .env
-├── server.js
-├── package.json
-└── README.md
+├── services/          # Contains business logic and external API integrations
+│   ├── agentService.js
+│   ├── brightDataService.js
+│   └── groqService.js
+├── utils/             # Utility functions
+│   └── newsSanitizer.js
+├── Test/              # Test files
+│   └── mcpTest.js
+├── server.js          # Entry point for the backend server
+├── package.json       # Project metadata and dependencies
+├── README.md          # Documentation for the backend
+├── LICENSE            # License for the project
+└── .env               # Environment variables (not included in version control)
 ```
 
 ---
