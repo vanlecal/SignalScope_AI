@@ -1,0 +1,121 @@
+import { motion } from "framer-motion";
+import { ArrowUpRight, Clock, TrendingDown, TrendingUp, Minus } from "lucide-react";
+import { NEWS, type NewsItem } from "@/lib/mock-data";
+
+const SEV_DOT = {
+  low: "bg-success shadow-[0_0_8px_var(--color-success)]",
+  moderate: "bg-warning shadow-[0_0_8px_var(--color-warning)]",
+  high: "bg-destructive shadow-[0_0_8px_var(--color-destructive)]",
+};
+
+const SENT_ICON = {
+  bullish: { Icon: TrendingUp, cls: "text-success bg-success/10 border-success/30" },
+  bearish: { Icon: TrendingDown, cls: "text-destructive bg-destructive/10 border-destructive/30" },
+  neutral: { Icon: Minus, cls: "text-muted-foreground bg-muted/30 border-border" },
+};
+
+export function NewsFeed({ onSelect, selectedId }: { onSelect: (n: NewsItem) => void; selectedId?: string }) {
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-semibold tracking-tight flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-success animate-pulse" />
+            Live Intelligence Feed
+          </h2>
+          <p className="text-xs text-muted-foreground mt-1 font-mono">
+            Updated 4s ago · 2,847 sources monitored
+          </p>
+        </div>
+        <div className="flex gap-1 text-xs font-mono">
+          {["All", "Macro", "Tech", "Energy"].map((t, i) => (
+            <button
+              key={t}
+              className={`px-3 py-1.5 rounded-lg transition-colors ${
+                i === 0
+                  ? "bg-electric/15 text-electric border border-electric/30"
+                  : "text-muted-foreground hover:text-foreground hover:bg-white/[0.04]"
+              }`}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        {NEWS.map((n, i) => {
+          const sent = SENT_ICON[n.sentiment];
+          const Sent = sent.Icon;
+          const isSel = selectedId === n.id;
+          return (
+            <motion.button
+              key={n.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.04 }}
+              onClick={() => onSelect(n)}
+              className={`group w-full text-left rounded-2xl p-5 glass border transition-all hover:border-electric/40 ${
+                isSel ? "border-electric/60 ring-glow-blue" : "border-border/60"
+              }`}
+            >
+              <div className="flex flex-col sm:flex-row gap-4">
+                {/* Thumbnail */}
+                <div className="relative shrink-0 w-full sm:w-32 h-24 rounded-xl overflow-hidden bg-gradient-to-br from-surface to-background ring-1 ring-border">
+                  <div className="absolute inset-0 grid-bg opacity-40" />
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      background: `radial-gradient(circle at 30% 30%, ${n.sourceColor}30, transparent 60%)`,
+                    }}
+                  />
+                  <div className="absolute bottom-2 left-2 text-[10px] font-mono uppercase tracking-wider text-foreground/80">
+                    {n.category}
+                  </div>
+                  <span className={`absolute top-2 right-2 h-2 w-2 rounded-full ${SEV_DOT[n.severity]}`} />
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-2 flex-wrap">
+                    <span
+                      className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-md border"
+                      style={{ color: n.sourceColor, borderColor: `${n.sourceColor}50`, background: `${n.sourceColor}10` }}
+                    >
+                      {n.source}
+                    </span>
+                    <span className={`inline-flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded-md border ${sent.cls}`}>
+                      <Sent className="h-2.5 w-2.5" />
+                      {n.sentiment}
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-[10px] font-mono text-muted-foreground">
+                      <Clock className="h-2.5 w-2.5" />
+                      {n.time}
+                    </span>
+                  </div>
+
+                  <h3 className="text-[15px] font-semibold leading-snug tracking-tight text-foreground group-hover:text-electric transition-colors">
+                    {n.headline}
+                  </h3>
+                  <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed line-clamp-2">
+                    {n.summary}
+                  </p>
+
+                  <div className="mt-3 flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                      {n.companies.slice(0, 3).map((c) => (
+                        <span key={c} className="font-mono px-1.5 py-0.5 rounded bg-white/[0.04]">${c}</span>
+                      ))}
+                    </div>
+                    <span className="inline-flex items-center gap-1 text-xs font-medium text-electric opacity-0 group-hover:opacity-100 transition-opacity">
+                      AI Analysis <ArrowUpRight className="h-3 w-3" />
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </motion.button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}

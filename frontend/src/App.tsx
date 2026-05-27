@@ -1,122 +1,61 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState } from "react";
+import { Navbar } from "@/components/Navbar";
+import { Sidebar } from "@/components/Sidebar";
+import { Hero } from "@/components/Hero";
+import { MarketCards } from "@/components/MarketCards";
+import { NewsFeed } from "@/components/NewsFeed";
+import { AnalysisPanel } from "@/components/AnalysisPanel";
+import type { NewsItem } from "@/lib/mock-data";
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const [selected, setSelected] = useState<NewsItem | null>(null);
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="dark min-h-screen text-foreground">
+      <Navbar />
+      <div className="flex">
+        <Sidebar />
+        <main className="flex-1 min-w-0">
+          <div className="mx-auto max-w-[1600px] space-y-6 p-4 md:p-6 lg:p-8">
+            <section id="overview" className="scroll-mt-24">
+              <Hero />
+            </section>
 
-      <div className="ticks"></div>
+            <section id="trends" className="scroll-mt-24 space-y-4">
+              <div className="flex items-end justify-between gap-4">
+                <div>
+                  <p className="text-xs font-mono uppercase tracking-[0.18em] text-muted-foreground">
+                    Market pulse
+                  </p>
+                  <h2 className="mt-1 text-lg font-semibold tracking-tight">Trend overview</h2>
+                </div>
+              </div>
+              <MarketCards />
+            </section>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+            <section id="feed" className="scroll-mt-24 space-y-4">
+              <NewsFeed onSelect={setSelected} selectedId={selected?.id} />
+            </section>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+            <section
+              id="analysis"
+              className="scroll-mt-24 rounded-3xl border border-border/60 glass p-6 md:p-8"
+            >
+              <div className="max-w-3xl space-y-3">
+                <p className="text-xs font-mono uppercase tracking-[0.18em] text-ai">AI insights</p>
+                <h2 className="text-2xl font-semibold tracking-tight md:text-3xl">
+                  Open any headline to inspect sector impact, company exposure, and trade ideas.
+                </h2>
+                <p className="text-sm leading-relaxed text-muted-foreground md:text-base">
+                  The analysis drawer turns each item into a structured brief so the interface stays
+                  fast, readable, and fully client-side in a standard Vite React setup.
+                </p>
+              </div>
+            </section>
+          </div>
+        </main>
+      </div>
+      <AnalysisPanel item={selected} onClose={() => setSelected(null)} />
+    </div>
+  );
 }
-
-export default App
