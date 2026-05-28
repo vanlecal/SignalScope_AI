@@ -40,7 +40,6 @@
 //   }
 // };
 
-
 // export const getBusinessNews = async (event) => {
 //   try {
 //     const encodedQuery = encodeURIComponent(event);
@@ -80,21 +79,12 @@
 //   }
 // };
 
-
-
 import axios from "axios";
 
-import {
-  normalizeImage,
-  isTrustedSource,
-} from "../utils/newsSanitizer.js";
-
-
+import { normalizeImage } from "../utils/newsSanitizer.js";
 
 export const fetchBusinessNews = async () => {
-
   try {
-
     const response = await axios.post(
       "https://api.brightdata.com/request",
 
@@ -115,7 +105,7 @@ export const fetchBusinessNews = async () => {
           Authorization: `Bearer ${process.env.BRIGHTDATA_API_KEY}`,
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     // Parse Bright Data body
@@ -123,9 +113,9 @@ export const fetchBusinessNews = async () => {
 
     console.log("Parsed Bright Data:", parsed);
 
-    // Clean + filter news
+    // Return all parsed news items, while still normalizing images
     const cleanedNews = (parsed.news || [])
-      .filter((article) => isTrustedSource(article.link))
+      .filter((article) => article && article.title && article.link)
       .map((article) => ({
         title: article.title,
         link: article.link,
@@ -139,23 +129,15 @@ export const fetchBusinessNews = async () => {
       }));
 
     return cleanedNews;
-
   } catch (error) {
-
-    console.error(
-      "Bright Data Error:",
-      error.response?.data || error.message
-    );
+    console.error("Bright Data Error:", error.response?.data || error.message);
 
     throw error;
   }
 };
 
-
-
 export const getBusinessNews = async (event) => {
   try {
-
     const encodedQuery = encodeURIComponent(event);
 
     const response = await axios.post(
@@ -172,7 +154,7 @@ export const getBusinessNews = async (event) => {
           Authorization: `Bearer ${process.env.BRIGHTDATA_API_KEY}`,
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     // Parse Bright Data response
@@ -187,7 +169,7 @@ export const getBusinessNews = async (event) => {
       "TechCrunch",
       "The Verge",
       "BBC",
-      "Yahoo Finance"
+      "Yahoo Finance",
     ];
 
     // Get raw news
@@ -195,13 +177,13 @@ export const getBusinessNews = async (event) => {
 
     // Filter + clean
     const cleanedNews = rawNews
-    .filter((article) => {
-      const source = article.source?.toLowerCase() || "";
-    
-      return trustedSources.some((trusted) =>
-        source.includes(trusted.toLowerCase())
-      );
-    })
+      .filter((article) => {
+        const source = article.source?.toLowerCase() || "";
+
+        return trustedSources.some((trusted) =>
+          source.includes(trusted.toLowerCase()),
+        );
+      })
       .map((article) => ({
         title: article.title,
         link: article.link,
@@ -210,19 +192,14 @@ export const getBusinessNews = async (event) => {
         date: article.date,
 
         // ONLY return image URL if available
-        image: article.image_link || null
+        image: article.image_link || null,
       }));
 
     console.log("Cleaned News:", cleanedNews);
 
     return cleanedNews;
-
   } catch (error) {
-
-    console.log(
-      "Bright Data Error:",
-      error.response?.data || error.message
-    );
+    console.log("Bright Data Error:", error.response?.data || error.message);
 
     throw error;
   }

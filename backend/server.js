@@ -17,7 +17,7 @@ app.get("/", (req, res) => {
   res.send("SignalScope AI Backend Running");
 });
 
-app.use("/api/analysis", analysisRoutes);
+// app.use("/api/analysis", analysisRoutes);
 app.use("/api/live-feed", liveFeedRoutes);
 app.use("/api/agent", agentRoutes);
 
