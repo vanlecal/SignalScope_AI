@@ -22,6 +22,8 @@ export function NewsFeed({
   error,
   activeCategory,
   onCategoryChange,
+  searchQuery,
+  totalItems,
 }: {
   items: NewsItem[];
   onSelect: (n: NewsItem) => void;
@@ -30,6 +32,8 @@ export function NewsFeed({
   error?: string | null;
   activeCategory: string;
   onCategoryChange: (category: string) => void;
+  searchQuery: string;
+  totalItems: number;
 }) {
   const categories = ["All", "Macro", "Tech", "Energy"];
 
@@ -75,6 +79,21 @@ export function NewsFeed({
             <div key={i} className="h-32 rounded-2xl border border-border/60 glass animate-pulse" />
           ))}
         </div>
+      ) : null}
+
+      {!loading && items.length === 0 ? (
+        <div className="rounded-2xl border border-border/60 glass p-6 text-sm text-muted-foreground">
+          {searchQuery
+            ? `No matches for “${searchQuery}”. Try a different company, ticker, or topic.`
+            : "No live headlines available right now."}
+        </div>
+      ) : null}
+
+      {!loading && items.length > 0 ? (
+        <p className="text-xs font-mono text-muted-foreground">
+          Showing {items.length} of {totalItems} headlines
+          {searchQuery ? ` · filtered by “${searchQuery}”` : ""}
+        </p>
       ) : null}
 
       <div className="space-y-3">

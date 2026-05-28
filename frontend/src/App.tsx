@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Sidebar } from "@/components/Sidebar";
 import { Hero } from "@/components/Hero";
@@ -17,12 +17,14 @@ export default function App() {
   const [items, setItems] = useState<NewsItem[]>([]);
   const [selected, setSelected] = useState<NewsItem | null>(null);
   const [activeCategory, setActiveCategory] = useState("All");
+  const [searchQuery, setSearchQuery] = useState("");
   const [feedLoading, setFeedLoading] = useState(true);
   const [feedError, setFeedError] = useState<string | null>(null);
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const lastAnalyzedHeadline = useRef<string | null>(null);
-  const metrics = deriveDashboardMetrics(items);
+  const visibleItems = useMemo(() => filterItems(items, searchQuery), [items, searchQuery]);
+  const metrics = deriveDashboardMetrics(visibleItems);
 
   useEffect(() => {
     let mounted = true;
@@ -113,9 +115,26 @@ export default function App() {
     };
   }, [selected]);
 
+  useEffect(() => {
+    if (visibleItems.length === 0) {
+      setSelected(null);
+      return;
+    }
+
+    setSelected((current) => {
+      if (!current) {
+        return visibleItems[0] ?? null;
+      }
+
+      return visibleItems.some((item) => item.id === current.id)
+        ? current
+        : (visibleItems[0] ?? null);
+    });
+  }, [visibleItems]);
+
   return (
     <div className="dark min-h-screen text-foreground">
-      <Navbar />
+      <Navbar searchValue={searchQuery} onSearchChange={setSearchQuery} />
       <div className="flex">
         <Sidebar />
         <main className="flex-1 min-w-0">
@@ -138,13 +157,15 @@ export default function App() {
 
             <section id="feed" className="scroll-mt-24 space-y-4">
               <NewsFeed
-                items={items}
+                items={visibleItems}
                 onSelect={setSelected}
                 selectedId={selected?.id}
                 loading={feedLoading}
                 error={feedError}
                 activeCategory={activeCategory}
                 onCategoryChange={setActiveCategory}
+                searchQuery={searchQuery}
+                totalItems={items.length}
               />
             </section>
 
@@ -173,4 +194,30 @@ export default function App() {
       />
     </div>
   );
+}
+
+function filterItems(items: NewsItem[], query: string): NewsItem[] {
+  const normalized = query.trim().toLowerCase();
+
+  if (!normalized) {
+    return items;
+  }
+
+  return items.filter((item) => {
+    const haystack = [
+      item.headline,
+      item.summary,
+      item.source,
+      item.category,
+      item.reasoning,
+      item.companies.join(" "),
+      item.industries.join(" "),
+      item.opportunities.join(" "),
+      item.risks.join(" "),
+    ]
+      .join(" ")
+      .toLowerCase();
+
+    return haystack.includes(normalized);
+  });
 }
