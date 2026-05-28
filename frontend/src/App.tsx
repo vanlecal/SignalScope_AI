@@ -6,7 +6,12 @@ import { MarketCards } from "@/components/MarketCards";
 import { NewsFeed } from "@/components/NewsFeed";
 import { AnalysisPanel } from "@/components/AnalysisPanel";
 import type { NewsItem } from "@/lib/mock-data";
-import { applyAnalysisToItem, analyzeEvent, fetchLiveNews } from "@/lib/api";
+import {
+  applyAnalysisToItem,
+  analyzeEvent,
+  deriveDashboardMetrics,
+  fetchLiveNews,
+} from "@/lib/api";
 
 export default function App() {
   const [items, setItems] = useState<NewsItem[]>([]);
@@ -15,6 +20,7 @@ export default function App() {
   const [feedError, setFeedError] = useState<string | null>(null);
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const metrics = deriveDashboardMetrics(items);
 
   useEffect(() => {
     let mounted = true;
@@ -100,7 +106,7 @@ export default function App() {
         <main className="flex-1 min-w-0">
           <div className="mx-auto max-w-[1600px] space-y-6 p-4 md:p-6 lg:p-8">
             <section id="overview" className="scroll-mt-24">
-              <Hero />
+              <Hero metrics={metrics} />
             </section>
 
             <section id="trends" className="scroll-mt-24 space-y-4">
@@ -109,10 +115,10 @@ export default function App() {
                   <p className="text-xs font-mono uppercase tracking-[0.18em] text-muted-foreground">
                     Market pulse
                   </p>
-                  <h2 className="mt-1 text-lg font-semibold tracking-tight">Trend overview</h2>
+                  <h2 className="mt-1 text-lg font-semibold tracking-tight">{metrics.headline}</h2>
                 </div>
               </div>
-              <MarketCards />
+              <MarketCards cards={metrics.cards} />
             </section>
 
             <section id="feed" className="scroll-mt-24 space-y-4">

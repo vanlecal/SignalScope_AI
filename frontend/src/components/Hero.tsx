@@ -1,16 +1,13 @@
 import { motion } from "framer-motion";
 import { ArrowRight, Radio, Sparkles } from "lucide-react";
 import orb from "@/assets/ai-orb.jpg";
-import { TICKERS } from "@/lib/mock-data";
+import type { DashboardMetrics } from "@/lib/api";
 
-export function Hero() {
+export function Hero({ metrics }: { metrics: DashboardMetrics }) {
   return (
     <section className="relative overflow-hidden rounded-3xl border border-border/60 glass">
       <div className="absolute inset-0 grid-bg opacity-60" />
-      <div
-        className="absolute inset-0 opacity-80"
-        style={{ background: "var(--gradient-hero)" }}
-      />
+      <div className="absolute inset-0 opacity-80" style={{ background: "var(--gradient-hero)" }} />
 
       {/* floating particles */}
       {[...Array(8)].map((_, i) => (
@@ -42,8 +39,7 @@ export function Hero() {
             transition={{ delay: 0.05 }}
             className="text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight leading-[1.05]"
           >
-            AI-Powered{" "}
-            <span className="gradient-text-ai">Market Intelligence</span>
+            AI-Powered <span className="gradient-text-ai">Market Intelligence</span>
           </motion.h1>
 
           <motion.p
@@ -52,8 +48,7 @@ export function Hero() {
             transition={{ delay: 0.12 }}
             className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-xl"
           >
-            Track market-moving events and analyze financial impact in real time.
-            Distill 2,800+ global sources into investor-grade signals — in seconds, not hours.
+            {metrics.description}
           </motion.p>
 
           <motion.div
@@ -96,7 +91,7 @@ export function Hero() {
       <div className="relative border-t border-border/60 bg-background/40 backdrop-blur">
         <div className="flex overflow-hidden">
           <div className="flex shrink-0 gap-8 py-3 px-6 animate-[shimmer_30s_linear_infinite] [animation:none] whitespace-nowrap">
-            {[...TICKERS, ...TICKERS].map((t, i) => (
+            {[...metrics.tickers, ...metrics.tickers].map((t, i) => (
               <div key={i} className="flex items-center gap-2 text-xs font-mono">
                 <span className="text-muted-foreground">{t.sym}</span>
                 <span className="text-foreground font-medium">{t.val}</span>

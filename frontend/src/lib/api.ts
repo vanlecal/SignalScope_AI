@@ -34,6 +34,31 @@ type AgentResponse = {
 
 const SOURCE_COLORS = ["#FF8000", "#0080C3", "#005594", "#00C2A8", "#A855F7", "#F97316"];
 
+export type MarketCardData = {
+  label: string;
+  value: string;
+  sub: string;
+  delta: string;
+  trend: "up" | "flat" | "down";
+  accent: "electric" | "ai" | "success" | "warning";
+};
+
+export type TickerData = {
+  sym: string;
+  val: string;
+  chg: string;
+  up: boolean;
+};
+
+export type DashboardMetrics = {
+  headline: string;
+  description: string;
+  cards: MarketCardData[];
+  tickers: TickerData[];
+  liveCount: number;
+  sourceCount: number;
+};
+
 export async function fetchLiveNews(): Promise<NewsItem[]> {
   const response = await fetch(`${BACKEND_BASE_URL}/api/live-feed/news`);
 
@@ -83,6 +108,84 @@ export function applyAnalysisToItem(item: NewsItem, analysis: AgentAnalysis): Ne
     opportunities: analysis.opportunities ?? item.opportunities,
     risks: analysis.risks ?? item.risks,
     reasoning: analysis.short_reasoning ?? item.reasoning,
+  };
+}
+
+export function deriveDashboardMetrics(items: NewsItem[]): DashboardMetrics {
+  const liveCount = items.length;
+  const sourceCounts = countBy(items.map((item) => item.source));
+  const categoryCounts = countBy(items.map((item) => item.category));
+  const severityCounts = countBy(items.map((item) => item.severity));
+  const sentimentCounts = countBy(items.map((item) => item.sentiment));
+
+  const topSource = pickTopEntry(sourceCounts) ?? "Live feed";
+  const topCategory = pickTopEntry(categoryCounts) ?? "Market overview";
+  const sourceCount = Object.keys(sourceCounts).length;
+
+  const bullishCount = sentimentCounts.bullish ?? 0;
+  const bearishCount = sentimentCounts.bearish ?? 0;
+  const neutralCount = sentimentCounts.neutral ?? 0;
+  const severityIndex = ((severityCounts.high ?? 0) * 3) + ((severityCounts.moderate ?? 0) * 2) + (severityCounts.low ?? 0);
+  const severityScore = liveCount > 0 ? Math.min(10, Math.max(0, severityIndex / liveCount)) : 0;
+  const bullishShare = liveCount > 0 ? Math.round((bullishCount / liveCount) * 100) : 0;
+  const bearishShare = liveCount > 0 ? Math.round((bearishCount / liveCount) * 100) : 0;
+  const neutralShare = liveCount > 0 ? Math.round((neutralCount / liveCount) * 100) : 0;
+
+  const topSourceShare = liveCount > 0 ? Math.round(((sourceCounts[topSource] ?? 0) / liveCount) * 100) : 0;
+
+  const cards: MarketCardData[] = [
+    {
+      label: "Trending Event",
+      value: topCategory,
+      sub: `${liveCount} live headlines tracked`,
+      delta: liveCount > 0 ? `+${liveCount}` : "0",
+      trend: liveCount > 0 ? "up" : "flat",
+      accent: "electric",
+    },
+    {
+      label: "Risk Severity",
+      value: severityScore > 7 ? "High" : severityScore > 4 ? "Moderate" : "Low",
+      sub: `${severityScore.toFixed(1)} / 10 aggregate score`,
+      delta: severityScore > 0 ? `${severityScore.toFixed(1)}` : "0",
+      trend: severityScore > 4 ? "up" : "flat",
+      accent: severityScore > 7 ? "warning" : "success",
+    },
+    {
+      label: "Most Mentioned",
+      value: topSource,
+      sub: `${sourceCount} unique sources`,
+      delta: liveCount > 0 ? `${topSourceShare}%` : "0%",
+      trend: "up",
+      accent: "ai",
+    },
+    {
+      label: "Market Sentiment",
+      value: bullishCount > bearishCount ? "Bullish" : bearishCount > bullishCount ? "Bearish" : "Neutral",
+      sub: `${bullishShare}% bullish Â· ${bearishShare}% bearish Â· ${neutralShare}% neutral`,
+      delta: bullishCount > bearishCount ? `+${bullishShare}` : bearishCount > bullishCount ? `-${bearishShare}` : "0",
+      trend: bullishCount > bearishCount ? "up" : bearishCount > bullishCount ? "down" : "flat",
+      accent: bullishCount > bearishCount ? "success" : bearishCount > bullishCount ? "warning" : "electric",
+    },
+  ];
+
+  const tickers: TickerData[] = [
+    { sym: "LIVE", val: `${liveCount}`, chg: `${liveCount > 0 ? "Active" : "Idle"}`, up: liveCount > 0 },
+    { sym: "SOURCES", val: `${sourceCount}`, chg: `${sourceCount > 0 ? "Tracked" : "None"}`, up: sourceCount > 0 },
+    { sym: "BULLISH", val: `${bullishShare}%`, chg: `+${bullishCount}`, up: bullishCount >= bearishCount },
+    { sym: "BEARISH", val: `${bearishShare}%`, chg: `-${bearishCount}`, up: false },
+    { sym: "TOP", val: topSource, chg: topCategory, up: true },
+    { sym: "MIX", val: `${bullishShare}/${bearishShare}`, chg: `${neutralShare}% neutral`, up: bullishCount >= bearishCount },
+  ];
+
+  return {
+    headline: topCategory,
+    description: liveCount > 0
+      ? `Tracking ${liveCount} live headlines across ${sourceCount} sources. ${topSource} is currently leading the feed.`
+      : "Waiting for live headlines to populate the market summary.",
+    cards,
+    tickers,
+    liveCount,
+    sourceCount,
   };
 }
 
@@ -213,6 +316,26 @@ function mapSeverity(severityLevel?: string): NewsItem["severity"] | null {
   }
 
   return null;
+}
+
+function countBy(values: Array<string | undefined>): Record<string, number> {
+  return values.reduce<Record<string, number>>((accumulator, value) => {
+    const key = value?.trim() || "Unknown";
+    accumulator[key] = (accumulator[key] ?? 0) + 1;
+    return accumulator;
+  }, {});
+}
+
+function pickTopEntry(counts: Record<string, number>): string | null {
+  const entries = Object.entries(counts);
+
+  if (entries.length === 0) {
+    return null;
+  }
+
+  entries.sort((a, b) => b[1] - a[1]);
+
+  return entries[0][0];
 }
 
 const SOURCE_COLOR_MAP: Record<string, string> = {
