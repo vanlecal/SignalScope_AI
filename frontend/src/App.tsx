@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Sidebar } from "@/components/Sidebar";
 import { Hero } from "@/components/Hero";
@@ -6,9 +6,91 @@ import { MarketCards } from "@/components/MarketCards";
 import { NewsFeed } from "@/components/NewsFeed";
 import { AnalysisPanel } from "@/components/AnalysisPanel";
 import type { NewsItem } from "@/lib/mock-data";
+import { applyAnalysisToItem, analyzeEvent, fetchLiveNews } from "@/lib/api";
 
 export default function App() {
+  const [items, setItems] = useState<NewsItem[]>([]);
   const [selected, setSelected] = useState<NewsItem | null>(null);
+  const [feedLoading, setFeedLoading] = useState(true);
+  const [feedError, setFeedError] = useState<string | null>(null);
+  const [analysisLoading, setAnalysisLoading] = useState(false);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadFeed = async () => {
+      try {
+        setFeedLoading(true);
+        setFeedError(null);
+
+        const liveItems = await fetchLiveNews();
+
+        if (!mounted) {
+          return;
+        }
+
+        setItems(liveItems);
+        setSelected((current) => current ?? liveItems[0] ?? null);
+      } catch (error) {
+        if (!mounted) {
+          return;
+        }
+
+        setFeedError(error instanceof Error ? error.message : "Failed to load live news.");
+        setItems([]);
+      } finally {
+        if (mounted) {
+          setFeedLoading(false);
+        }
+      }
+    };
+
+    void loadFeed();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!selected?.headline) {
+      return;
+    }
+
+    let mounted = true;
+
+    const loadAnalysis = async () => {
+      try {
+        setAnalysisLoading(true);
+        setAnalysisError(null);
+
+        const analysis = await analyzeEvent(selected.headline);
+
+        if (!mounted) {
+          return;
+        }
+
+        const merged = applyAnalysisToItem(selected, analysis);
+        setSelected(merged);
+        setItems((current) => current.map((item) => (item.id === merged.id ? merged : item)));
+      } catch (error) {
+        if (mounted) {
+          setAnalysisError(error instanceof Error ? error.message : "Failed to load analysis.");
+        }
+      } finally {
+        if (mounted) {
+          setAnalysisLoading(false);
+        }
+      }
+    };
+
+    void loadAnalysis();
+
+    return () => {
+      mounted = false;
+    };
+  }, [selected?.headline, selected?.id]);
 
   return (
     <div className="dark min-h-screen text-foreground">
@@ -34,7 +116,13 @@ export default function App() {
             </section>
 
             <section id="feed" className="scroll-mt-24 space-y-4">
-              <NewsFeed onSelect={setSelected} selectedId={selected?.id} />
+              <NewsFeed
+                items={items}
+                onSelect={setSelected}
+                selectedId={selected?.id}
+                loading={feedLoading}
+                error={feedError}
+              />
             </section>
 
             <section
@@ -55,7 +143,12 @@ export default function App() {
           </div>
         </main>
       </div>
-      <AnalysisPanel item={selected} onClose={() => setSelected(null)} />
+      <AnalysisPanel
+        item={selected}
+        onClose={() => setSelected(null)}
+        loading={analysisLoading}
+        error={analysisError}
+      />
     </div>
   );
 }

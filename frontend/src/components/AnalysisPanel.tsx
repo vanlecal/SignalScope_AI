@@ -1,14 +1,47 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { X, Sparkles, AlertTriangle, TrendingUp, Building2, Factory, Brain, ShieldCheck } from "lucide-react";
+import {
+  ExternalLink,
+  Loader2,
+  X,
+  Sparkles,
+  AlertTriangle,
+  TrendingUp,
+  Building2,
+  Factory,
+  Brain,
+  ShieldCheck,
+} from "lucide-react";
 import type { NewsItem } from "@/lib/mock-data";
 
 const SEV = {
-  low: { label: "Low Impact", cls: "text-success bg-success/10 border-success/30", dot: "bg-success" },
-  moderate: { label: "Moderate Impact", cls: "text-warning bg-warning/10 border-warning/30", dot: "bg-warning" },
-  high: { label: "High Impact", cls: "text-destructive bg-destructive/10 border-destructive/30", dot: "bg-destructive" },
+  low: {
+    label: "Low Impact",
+    cls: "text-success bg-success/10 border-success/30",
+    dot: "bg-success",
+  },
+  moderate: {
+    label: "Moderate Impact",
+    cls: "text-warning bg-warning/10 border-warning/30",
+    dot: "bg-warning",
+  },
+  high: {
+    label: "High Impact",
+    cls: "text-destructive bg-destructive/10 border-destructive/30",
+    dot: "bg-destructive",
+  },
 };
 
-export function AnalysisPanel({ item, onClose }: { item: NewsItem | null; onClose: () => void }) {
+export function AnalysisPanel({
+  item,
+  onClose,
+  loading,
+  error,
+}: {
+  item: NewsItem | null;
+  onClose: () => void;
+  loading?: boolean;
+  error?: string | null;
+}) {
   return (
     <AnimatePresence>
       {item && (
@@ -38,7 +71,9 @@ export function AnalysisPanel({ item, onClose }: { item: NewsItem | null; onClos
                     <Brain className="h-4 w-4 text-white" />
                   </div>
                   <div>
-                    <div className="text-[10px] font-mono uppercase tracking-[0.15em] text-ai">AI Analysis</div>
+                    <div className="text-[10px] font-mono uppercase tracking-[0.15em] text-ai">
+                      AI Analysis
+                    </div>
                     <div className="text-sm font-semibold">SignalScope Engine</div>
                   </div>
                 </div>
@@ -50,12 +85,18 @@ export function AnalysisPanel({ item, onClose }: { item: NewsItem | null; onClos
                 </button>
               </div>
 
-              <div className={`relative mt-4 inline-flex items-center gap-1.5 text-[11px] font-mono px-2.5 py-1 rounded-md border ${SEV[item.severity].cls}`}>
-                <span className={`h-1.5 w-1.5 rounded-full ${SEV[item.severity].dot} animate-pulse`} />
+              <div
+                className={`relative mt-4 inline-flex items-center gap-1.5 text-[11px] font-mono px-2.5 py-1 rounded-md border ${SEV[item.severity].cls}`}
+              >
+                <span
+                  className={`h-1.5 w-1.5 rounded-full ${SEV[item.severity].dot} animate-pulse`}
+                />
                 {SEV[item.severity].label}
               </div>
 
-              <h3 className="relative mt-3 text-base font-semibold leading-snug">{item.headline}</h3>
+              <h3 className="relative mt-3 text-base font-semibold leading-snug">
+                {item.headline}
+              </h3>
             </div>
 
             {/* Scrollable body */}
@@ -63,70 +104,126 @@ export function AnalysisPanel({ item, onClose }: { item: NewsItem | null; onClos
               <div className="p-5 space-y-5">
                 <Section icon={Factory} label="Affected Industries" tint="text-electric">
                   <div className="flex flex-wrap gap-1.5">
-                    {item.industries.map((s) => (
-                      <span key={s} className="text-xs px-2.5 py-1 rounded-lg bg-electric/10 border border-electric/25 text-electric font-medium">
-                        {s}
-                      </span>
-                    ))}
+                    {item.industries.length > 0 ? (
+                      item.industries.map((s) => (
+                        <span
+                          key={s}
+                          className="text-xs px-2.5 py-1 rounded-lg bg-electric/10 border border-electric/25 text-electric font-medium"
+                        >
+                          {s}
+                        </span>
+                      ))
+                    ) : (
+                      <Placeholder>Awaiting analysis</Placeholder>
+                    )}
                   </div>
                 </Section>
 
                 <Section icon={Building2} label="Affected Companies" tint="text-ai">
                   <div className="flex flex-wrap gap-1.5">
-                    {item.companies.map((s) => (
-                      <span key={s} className="text-xs px-2.5 py-1 rounded-lg bg-ai/10 border border-ai/25 text-ai font-mono">
-                        ${s}
-                      </span>
-                    ))}
+                    {item.companies.length > 0 ? (
+                      item.companies.map((s) => (
+                        <span
+                          key={s}
+                          className="text-xs px-2.5 py-1 rounded-lg bg-ai/10 border border-ai/25 text-ai font-mono"
+                        >
+                          ${s}
+                        </span>
+                      ))
+                    ) : (
+                      <Placeholder>Awaiting analysis</Placeholder>
+                    )}
                   </div>
                 </Section>
 
                 <Section icon={TrendingUp} label="Opportunities" tint="text-success">
-                  <ul className="space-y-2">
-                    {item.opportunities.map((o, i) => (
-                      <li key={i} className="flex gap-2.5 text-sm leading-relaxed text-foreground/90">
-                        <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-success shrink-0" />
-                        {o}
-                      </li>
-                    ))}
-                  </ul>
+                  {item.opportunities.length > 0 ? (
+                    <ul className="space-y-2">
+                      {item.opportunities.map((o, i) => (
+                        <li
+                          key={i}
+                          className="flex gap-2.5 text-sm leading-relaxed text-foreground/90"
+                        >
+                          <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-success shrink-0" />
+                          {o}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <Placeholder>Awaiting analysis</Placeholder>
+                  )}
                 </Section>
 
                 <Section icon={AlertTriangle} label="Risks" tint="text-destructive">
-                  <ul className="space-y-2">
-                    {item.risks.map((o, i) => (
-                      <li key={i} className="flex gap-2.5 text-sm leading-relaxed text-foreground/90">
-                        <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-destructive shrink-0" />
-                        {o}
-                      </li>
-                    ))}
-                  </ul>
+                  {item.risks.length > 0 ? (
+                    <ul className="space-y-2">
+                      {item.risks.map((o, i) => (
+                        <li
+                          key={i}
+                          className="flex gap-2.5 text-sm leading-relaxed text-foreground/90"
+                        >
+                          <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-destructive shrink-0" />
+                          {o}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <Placeholder>Awaiting analysis</Placeholder>
+                  )}
                 </Section>
 
                 <Section icon={Sparkles} label="AI Reasoning" tint="text-ai">
                   <div className="relative rounded-xl p-4 bg-gradient-to-br from-ai/10 via-electric/5 to-transparent border border-ai/20">
                     <div className="absolute -inset-px rounded-xl bg-gradient-to-br from-ai/20 to-electric/10 -z-10 blur" />
-                    <p className="text-sm leading-relaxed text-foreground/95">{item.reasoning}</p>
-                    <div className="mt-3 flex items-center gap-2 text-[10px] font-mono text-muted-foreground">
-                      <ShieldCheck className="h-3 w-3 text-success" />
-                      Confidence: <span className="text-success">87%</span>
-                      <span className="mx-1">·</span>
-                      Sources cross-verified: <span className="text-foreground">14</span>
-                    </div>
+                    <p className="text-sm leading-relaxed text-foreground/95">
+                      {loading ? "Running live analysis..." : item.reasoning || "Awaiting analysis"}
+                    </p>
+                    {error ? (
+                      <p className="mt-3 text-xs font-mono text-destructive">{error}</p>
+                    ) : (
+                      <div className="mt-3 flex items-center gap-2 text-[10px] font-mono text-muted-foreground">
+                        {loading ? (
+                          <Loader2 className="h-3 w-3 animate-spin text-ai" />
+                        ) : (
+                          <ShieldCheck className="h-3 w-3 text-success" />
+                        )}
+                        {loading ? "Fetching live data" : "Live analysis ready"}
+                      </div>
+                    )}
                   </div>
                 </Section>
               </div>
             </div>
 
             <div className="p-4 border-t border-border/60 shrink-0">
-              <button className="w-full h-10 rounded-xl bg-gradient-to-br from-electric to-ai text-white text-sm font-medium hover:shadow-[0_0_24px_var(--color-electric)] transition-all">
-                Read Full Article
-              </button>
+              {item.link ? (
+                <a
+                  href={item.link}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-full h-10 rounded-xl bg-gradient-to-br from-electric to-ai text-white text-sm font-medium hover:shadow-[0_0_24px_var(--color-electric)] transition-all inline-flex items-center justify-center gap-2"
+                >
+                  Read Full Article
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </a>
+              ) : (
+                <button className="w-full h-10 rounded-xl bg-gradient-to-br from-electric to-ai text-white text-sm font-medium hover:shadow-[0_0_24px_var(--color-electric)] transition-all">
+                  Read Full Article
+                </button>
+              )}
             </div>
           </motion.aside>
         </>
       )}
     </AnimatePresence>
+  );
+}
+
+function Placeholder({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="text-xs rounded-lg border border-dashed border-border/70 bg-white/[0.03] px-2.5 py-1 text-muted-foreground">
+      {children}
+    </span>
   );
 }
 
@@ -145,7 +242,9 @@ function Section({
     <div>
       <div className="flex items-center gap-2 mb-2.5">
         <Icon className={`h-3.5 w-3.5 ${tint}`} />
-        <span className="text-[11px] font-mono uppercase tracking-[0.12em] text-muted-foreground">{label}</span>
+        <span className="text-[11px] font-mono uppercase tracking-[0.12em] text-muted-foreground">
+          {label}
+        </span>
       </div>
       {children}
     </div>

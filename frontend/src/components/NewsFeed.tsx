@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
-import { ArrowUpRight, Clock, TrendingDown, TrendingUp, Minus } from "lucide-react";
-import { NEWS, type NewsItem } from "@/lib/mock-data";
+import { ArrowUpRight, Clock, ImageOff, TrendingDown, TrendingUp, Minus } from "lucide-react";
+import type { NewsItem } from "@/lib/mock-data";
 
 const SEV_DOT = {
   low: "bg-success shadow-[0_0_8px_var(--color-success)]",
@@ -14,7 +14,19 @@ const SENT_ICON = {
   neutral: { Icon: Minus, cls: "text-muted-foreground bg-muted/30 border-border" },
 };
 
-export function NewsFeed({ onSelect, selectedId }: { onSelect: (n: NewsItem) => void; selectedId?: string }) {
+export function NewsFeed({
+  items,
+  onSelect,
+  selectedId,
+  loading,
+  error,
+}: {
+  items: NewsItem[];
+  onSelect: (n: NewsItem) => void;
+  selectedId?: string;
+  loading?: boolean;
+  error?: string | null;
+}) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
@@ -43,8 +55,22 @@ export function NewsFeed({ onSelect, selectedId }: { onSelect: (n: NewsItem) => 
         </div>
       </div>
 
+      {error ? (
+        <div className="rounded-2xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+          {error}
+        </div>
+      ) : null}
+
+      {loading && items.length === 0 ? (
+        <div className="space-y-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-32 rounded-2xl border border-border/60 glass animate-pulse" />
+          ))}
+        </div>
+      ) : null}
+
       <div className="space-y-3">
-        {NEWS.map((n, i) => {
+        {items.map((n, i) => {
           const sent = SENT_ICON[n.sentiment];
           const Sent = sent.Icon;
           const isSel = selectedId === n.id;
@@ -62,28 +88,50 @@ export function NewsFeed({ onSelect, selectedId }: { onSelect: (n: NewsItem) => 
               <div className="flex flex-col sm:flex-row gap-4">
                 {/* Thumbnail */}
                 <div className="relative shrink-0 w-full sm:w-32 h-24 rounded-xl overflow-hidden bg-gradient-to-br from-surface to-background ring-1 ring-border">
-                  <div className="absolute inset-0 grid-bg opacity-40" />
-                  <div
-                    className="absolute inset-0"
-                    style={{
-                      background: `radial-gradient(circle at 30% 30%, ${n.sourceColor}30, transparent 60%)`,
-                    }}
-                  />
+                  {n.image ? (
+                    <img
+                      src={n.image}
+                      alt={n.headline}
+                      className="absolute inset-0 h-full w-full object-cover"
+                    />
+                  ) : (
+                    <>
+                      <div className="absolute inset-0 grid-bg opacity-40" />
+                      <div
+                        className="absolute inset-0"
+                        style={{
+                          background: `radial-gradient(circle at 30% 30%, ${n.sourceColor}30, transparent 60%)`,
+                        }}
+                      />
+                      <div className="absolute inset-0 grid place-items-center text-[10px] font-mono uppercase tracking-wider text-foreground/55">
+                        <ImageOff className="mr-1.5 h-3 w-3" />
+                        No image
+                      </div>
+                    </>
+                  )}
                   <div className="absolute bottom-2 left-2 text-[10px] font-mono uppercase tracking-wider text-foreground/80">
                     {n.category}
                   </div>
-                  <span className={`absolute top-2 right-2 h-2 w-2 rounded-full ${SEV_DOT[n.severity]}`} />
+                  <span
+                    className={`absolute top-2 right-2 h-2 w-2 rounded-full ${SEV_DOT[n.severity]}`}
+                  />
                 </div>
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-2 flex-wrap">
                     <span
                       className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-md border"
-                      style={{ color: n.sourceColor, borderColor: `${n.sourceColor}50`, background: `${n.sourceColor}10` }}
+                      style={{
+                        color: n.sourceColor,
+                        borderColor: `${n.sourceColor}50`,
+                        background: `${n.sourceColor}10`,
+                      }}
                     >
                       {n.source}
                     </span>
-                    <span className={`inline-flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded-md border ${sent.cls}`}>
+                    <span
+                      className={`inline-flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded-md border ${sent.cls}`}
+                    >
                       <Sent className="h-2.5 w-2.5" />
                       {n.sentiment}
                     </span>
@@ -103,7 +151,9 @@ export function NewsFeed({ onSelect, selectedId }: { onSelect: (n: NewsItem) => 
                   <div className="mt-3 flex items-center justify-between">
                     <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
                       {n.companies.slice(0, 3).map((c) => (
-                        <span key={c} className="font-mono px-1.5 py-0.5 rounded bg-white/[0.04]">${c}</span>
+                        <span key={c} className="font-mono px-1.5 py-0.5 rounded bg-white/[0.04]">
+                          ${c}
+                        </span>
                       ))}
                     </div>
                     <span className="inline-flex items-center gap-1 text-xs font-medium text-electric opacity-0 group-hover:opacity-100 transition-opacity">
