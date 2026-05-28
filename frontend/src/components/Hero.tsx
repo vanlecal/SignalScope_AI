@@ -66,6 +66,19 @@ export function Hero({ metrics }: { metrics: DashboardMetrics }) {
               Start Monitoring
             </button>
           </motion.div>
+
+          {metrics.keywords && metrics.keywords.length > 0 && (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {metrics.keywords.map((k) => (
+                <span
+                  key={k}
+                  className="text-xs px-2 py-1 rounded bg-background/60 border text-muted-foreground"
+                >
+                  {k}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* AI Orb */}

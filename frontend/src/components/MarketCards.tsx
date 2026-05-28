@@ -41,7 +41,7 @@ export function MarketCards({ cards }: { cards: MarketCardData[] }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
       {cards.map((c, i) => {
-        const Icon = ICONS[i];
+        const Icon = ICONS[i % ICONS.length] ?? Flame;
         const a = ACCENTS[c.accent];
         return (
           <motion.div

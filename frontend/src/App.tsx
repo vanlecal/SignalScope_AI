@@ -141,8 +141,7 @@ export default function App() {
                   Open any headline to inspect sector impact, company exposure, and trade ideas.
                 </h2>
                 <p className="text-sm leading-relaxed text-muted-foreground md:text-base">
-                  The analysis drawer turns each item into a structured brief so the interface stays
-                  fast, readable, and fully client-side in a standard Vite React setup.
+                  The analysis drawer turns each item into a structured brief.
                 </p>
               </div>
             </section>

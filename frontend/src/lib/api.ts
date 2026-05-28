@@ -1,4 +1,5 @@
 import type { NewsItem } from "@/lib/mock-data";
+import { extractKeywords } from "@/lib/extractors";
 
 const BACKEND_BASE_URL = import.meta.env.VITE_BACKEND_URL ?? "http://localhost:5000";
 
@@ -57,6 +58,7 @@ export type DashboardMetrics = {
   tickers: TickerData[];
   liveCount: number;
   sourceCount: number;
+  keywords?: string[];
 };
 
 export async function fetchLiveNews(): Promise<NewsItem[]> {
@@ -125,13 +127,17 @@ export function deriveDashboardMetrics(items: NewsItem[]): DashboardMetrics {
   const bullishCount = sentimentCounts.bullish ?? 0;
   const bearishCount = sentimentCounts.bearish ?? 0;
   const neutralCount = sentimentCounts.neutral ?? 0;
-  const severityIndex = ((severityCounts.high ?? 0) * 3) + ((severityCounts.moderate ?? 0) * 2) + (severityCounts.low ?? 0);
+  const severityIndex =
+    (severityCounts.high ?? 0) * 3 + (severityCounts.moderate ?? 0) * 2 + (severityCounts.low ?? 0);
   const severityScore = liveCount > 0 ? Math.min(10, Math.max(0, severityIndex / liveCount)) : 0;
   const bullishShare = liveCount > 0 ? Math.round((bullishCount / liveCount) * 100) : 0;
   const bearishShare = liveCount > 0 ? Math.round((bearishCount / liveCount) * 100) : 0;
   const neutralShare = liveCount > 0 ? Math.round((neutralCount / liveCount) * 100) : 0;
 
-  const topSourceShare = liveCount > 0 ? Math.round(((sourceCounts[topSource] ?? 0) / liveCount) * 100) : 0;
+  const topSourceShare =
+    liveCount > 0 ? Math.round(((sourceCounts[topSource] ?? 0) / liveCount) * 100) : 0;
+
+  const keywords = extractKeywords(items, 5);
 
   const cards: MarketCardData[] = [
     {
@@ -160,30 +166,69 @@ export function deriveDashboardMetrics(items: NewsItem[]): DashboardMetrics {
     },
     {
       label: "Market Sentiment",
-      value: bullishCount > bearishCount ? "Bullish" : bearishCount > bullishCount ? "Bearish" : "Neutral",
-      sub: `${bullishShare}% bullish Â· ${bearishShare}% bearish Â· ${neutralShare}% neutral`,
-      delta: bullishCount > bearishCount ? `+${bullishShare}` : bearishCount > bullishCount ? `-${bearishShare}` : "0",
+      value:
+        bullishCount > bearishCount
+          ? "Bullish"
+          : bearishCount > bullishCount
+            ? "Bearish"
+            : "Neutral",
+      sub: `${bullishShare}% bullish · ${bearishShare}% bearish · ${neutralShare}% neutral`,
+      delta:
+        bullishCount > bearishCount
+          ? `+${bullishShare}`
+          : bearishCount > bullishCount
+            ? `-${bearishShare}`
+            : "0",
       trend: bullishCount > bearishCount ? "up" : bearishCount > bullishCount ? "down" : "flat",
-      accent: bullishCount > bearishCount ? "success" : bearishCount > bullishCount ? "warning" : "electric",
+      accent:
+        bullishCount > bullishCount
+          ? "success"
+          : bearishCount > bullishCount
+            ? "warning"
+            : "electric",
     },
   ];
 
+  // Top Companies card removed — not needed in the current UI
+
   const tickers: TickerData[] = [
-    { sym: "LIVE", val: `${liveCount}`, chg: `${liveCount > 0 ? "Active" : "Idle"}`, up: liveCount > 0 },
-    { sym: "SOURCES", val: `${sourceCount}`, chg: `${sourceCount > 0 ? "Tracked" : "None"}`, up: sourceCount > 0 },
-    { sym: "BULLISH", val: `${bullishShare}%`, chg: `+${bullishCount}`, up: bullishCount >= bearishCount },
+    {
+      sym: "LIVE",
+      val: `${liveCount}`,
+      chg: `${liveCount > 0 ? "Active" : "Idle"}`,
+      up: liveCount > 0,
+    },
+    {
+      sym: "SOURCES",
+      val: `${sourceCount}`,
+      chg: `${sourceCount > 0 ? "Tracked" : "None"}`,
+      up: sourceCount > 0,
+    },
+    {
+      sym: "BULLISH",
+      val: `${bullishShare}%`,
+      chg: `+${bullishCount}`,
+      up: bullishCount >= bearishCount,
+    },
     { sym: "BEARISH", val: `${bearishShare}%`, chg: `-${bearishCount}`, up: false },
     { sym: "TOP", val: topSource, chg: topCategory, up: true },
-    { sym: "MIX", val: `${bullishShare}/${bearishShare}`, chg: `${neutralShare}% neutral`, up: bullishCount >= bearishCount },
+    {
+      sym: "MIX",
+      val: `${bullishShare}/${bearishShare}`,
+      chg: `${neutralShare}% neutral`,
+      up: bullishCount >= bearishCount,
+    },
   ];
 
   return {
     headline: topCategory,
-    description: liveCount > 0
-      ? `Tracking ${liveCount} live headlines across ${sourceCount} sources. ${topSource} is currently leading the feed.`
-      : "Waiting for live headlines to populate the market summary.",
+    description:
+      liveCount > 0
+        ? `Tracking ${liveCount} live headlines across ${sourceCount} sources. ${topSource} is currently leading the feed.`
+        : "Waiting for live headlines to populate the market summary.",
     cards,
     tickers,
+    keywords,
     liveCount,
     sourceCount,
   };
