@@ -1,24 +1,21 @@
-import { fetchBusinessNews }
-from "../services/brightDataService.js";
+import { fetchBusinessNews } from "../services/brightDataService.js";
 
 export const getLiveFeed = async (req, res) => {
-
   try {
+    const category =
+      typeof req.query.category === "string" ? req.query.category : "All";
 
-    const news =
-      await fetchBusinessNews();
+    const news = await fetchBusinessNews(category);
 
     res.status(200).json({
       success: true,
-      news
+      news,
+      category,
     });
-
   } catch (error) {
-
     res.status(500).json({
       success: false,
-      error: error.message
+      error: error.message,
     });
-
   }
 };

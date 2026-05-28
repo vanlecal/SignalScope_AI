@@ -13,6 +13,8 @@ export type NewsItem = {
   opportunities: string[];
   risks: string[];
   reasoning: string;
+  link?: string;
+  image?: string | null;
 };
 
 export const NEWS: NewsItem[] = [
