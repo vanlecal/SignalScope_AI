@@ -13,6 +13,7 @@ type BackendArticle = {
   image?: string | null;
   rank?: number;
   global_rank?: number;
+  category?: string;
 };
 
 type AgentAnalysis = {
@@ -61,8 +62,16 @@ export type DashboardMetrics = {
   keywords?: string[];
 };
 
-export async function fetchLiveNews(): Promise<NewsItem[]> {
-  const response = await fetch(`${BACKEND_BASE_URL}/api/live-feed/news`);
+export async function fetchLiveNews(category = "All"): Promise<NewsItem[]> {
+  const params = new URLSearchParams();
+
+  if (category && category !== "All") {
+    params.set("category", category);
+  }
+
+  const query = params.toString();
+  const requestUrl = `${BACKEND_BASE_URL}/api/live-feed/news${query ? "?" + query : ""}`;
+  const response = await fetch(requestUrl);
 
   if (!response.ok) {
     throw new Error(`Live feed request failed with status ${response.status}`);
@@ -246,7 +255,7 @@ function mapArticleToNewsItem(article: BackendArticle, index: number): NewsItem 
     headline: article.title,
     summary: article.description || article.title,
     time: article.date || "Just now",
-    category: inferCategory(source, article.title),
+    category: article.category ?? inferCategory(source, article.title),
     sentiment: mood.sentiment,
     severity: mood.severity,
     industries: [],

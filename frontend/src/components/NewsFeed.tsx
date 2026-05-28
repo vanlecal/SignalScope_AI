@@ -20,13 +20,19 @@ export function NewsFeed({
   selectedId,
   loading,
   error,
+  activeCategory,
+  onCategoryChange,
 }: {
   items: NewsItem[];
   onSelect: (n: NewsItem) => void;
   selectedId?: string;
   loading?: boolean;
   error?: string | null;
+  activeCategory: string;
+  onCategoryChange: (category: string) => void;
 }) {
+  const categories = ["All", "Macro", "Tech", "Energy"];
+
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
@@ -40,11 +46,13 @@ export function NewsFeed({
           </p>
         </div>
         <div className="flex gap-1 text-xs font-mono">
-          {["All", "Macro", "Tech", "Energy"].map((t, i) => (
+          {categories.map((t) => (
             <button
               key={t}
+              type="button"
+              onClick={() => onCategoryChange(t)}
               className={`px-3 py-1.5 rounded-lg transition-colors ${
-                i === 0
+                activeCategory === t
                   ? "bg-electric/15 text-electric border border-electric/30"
                   : "text-muted-foreground hover:text-foreground hover:bg-white/[0.04]"
               }`}

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Sidebar } from "@/components/Sidebar";
 import { Hero } from "@/components/Hero";
@@ -16,10 +16,12 @@ import {
 export default function App() {
   const [items, setItems] = useState<NewsItem[]>([]);
   const [selected, setSelected] = useState<NewsItem | null>(null);
+  const [activeCategory, setActiveCategory] = useState("All");
   const [feedLoading, setFeedLoading] = useState(true);
   const [feedError, setFeedError] = useState<string | null>(null);
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const lastAnalyzedHeadline = useRef<string | null>(null);
   const metrics = deriveDashboardMetrics(items);
 
   useEffect(() => {
@@ -30,14 +32,22 @@ export default function App() {
         setFeedLoading(true);
         setFeedError(null);
 
-        const liveItems = await fetchLiveNews();
+        const liveItems = await fetchLiveNews(activeCategory);
 
         if (!mounted) {
           return;
         }
 
         setItems(liveItems);
-        setSelected((current) => current ?? liveItems[0] ?? null);
+        setSelected((current) => {
+          if (!current) {
+            return liveItems[0] ?? null;
+          }
+
+          return liveItems.some((item) => item.id === current.id)
+            ? current
+            : (liveItems[0] ?? null);
+        });
       } catch (error) {
         if (!mounted) {
           return;
@@ -57,10 +67,14 @@ export default function App() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [activeCategory]);
 
   useEffect(() => {
     if (!selected?.headline) {
+      return;
+    }
+
+    if (lastAnalyzedHeadline.current === selected.headline) {
       return;
     }
 
@@ -78,6 +92,7 @@ export default function App() {
         }
 
         const merged = applyAnalysisToItem(selected, analysis);
+        lastAnalyzedHeadline.current = selected.headline;
         setSelected(merged);
         setItems((current) => current.map((item) => (item.id === merged.id ? merged : item)));
       } catch (error) {
@@ -96,7 +111,7 @@ export default function App() {
     return () => {
       mounted = false;
     };
-  }, [selected?.headline, selected?.id]);
+  }, [selected]);
 
   return (
     <div className="dark min-h-screen text-foreground">
@@ -128,6 +143,8 @@ export default function App() {
                 selectedId={selected?.id}
                 loading={feedLoading}
                 error={feedError}
+                activeCategory={activeCategory}
+                onCategoryChange={setActiveCategory}
               />
             </section>
 
