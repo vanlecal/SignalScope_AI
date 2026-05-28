@@ -1,7 +1,7 @@
 import type { NewsItem } from "@/lib/mock-data";
 import { extractKeywords } from "@/lib/extractors";
 
-const BACKEND_BASE_URL = import.meta.env.VITE_BACKEND_URL ?? "http://localhost:5000";
+const BACKEND_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 type BackendArticle = {
   title: string;
