@@ -160,6 +160,10 @@
   .scrollbar-thin::-webkit-scrollbar-thumb {
     background: oklch(0.35 0.03 265); border-radius: 4px;
   }
+  .content-auto {
+    content-visibility: auto;
+    contain-intrinsic-size: 360px;
+  }
 }
 
 @keyframes pulse-glow {
@@ -180,4 +184,33 @@
   background: linear-gradient(90deg, transparent, oklch(1 0 0 / 0.06), transparent);
   background-size: 200% 100%;
   animation: shimmer 2s linear infinite;
+}
+
+@media (max-width: 768px) {
+  body {
+    background-attachment: scroll;
+  }
+
+  .glass,
+  .glass-strong {
+    backdrop-filter: blur(10px) saturate(120%);
+    -webkit-backdrop-filter: blur(10px) saturate(120%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .animate-float,
+  .animate-pulse-glow,
+  .animate-shimmer {
+    animation: none !important;
+  }
 }

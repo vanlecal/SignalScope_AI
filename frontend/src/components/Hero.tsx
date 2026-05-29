@@ -126,6 +126,8 @@ export function Hero({
             alt=""
             width={1024}
             height={1024}
+            loading="eager"
+            decoding="async"
             className="relative w-full h-full object-cover rounded-full mix-blend-screen"
           />
           <div className="absolute inset-0 rounded-full ring-1 ring-electric/30" />

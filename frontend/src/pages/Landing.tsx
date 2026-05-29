@@ -29,9 +29,16 @@ const EMPTY_NEWS = CATEGORIES.reduce(
   {} as Record<string, NewsItem[]>,
 );
 
+const EMPTY_CATEGORIES_LOADING = CATEGORIES.reduce(
+  (acc, category) => ({ ...acc, [category]: false }),
+  {} as Record<string, boolean>,
+);
+
 export default function Landing() {
   const [metrics, setMetrics] = useState<DashboardMetrics>(FALLBACK_METRICS);
+  const [items, setItems] = useState<NewsItem[]>([]);
   const [news, setNews] = useState<Record<string, NewsItem[]>>(EMPTY_NEWS);
+  const [categoryLoading, setCategoryLoading] = useState(EMPTY_CATEGORIES_LOADING);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -41,30 +48,17 @@ export default function Landing() {
       setLoading(true);
 
       try {
-        const [allItems, categoryBatches] = await Promise.all([
-          fetchLiveNews("All"),
-          Promise.all(
-            CATEGORIES.map((category) =>
-              fetchLiveNews(category)
-                .then((items) => items.slice(0, 4))
-                .catch(() => []),
-            ),
-          ),
-        ]);
+        const allItems = await fetchLiveNews("All");
 
         if (!mounted) return;
 
         setMetrics(allItems.length > 0 ? deriveDashboardMetrics(allItems) : FALLBACK_METRICS);
-
-        const nextNews: Record<string, NewsItem[]> = {};
-        CATEGORIES.forEach((category, index) => {
-          nextNews[category] = categoryBatches[index] ?? [];
-        });
-
-        setNews(nextNews);
+        setItems(allItems);
+        setNews(groupItemsByCategory(allItems));
       } catch {
         if (mounted) {
           setMetrics(FALLBACK_METRICS);
+          setItems([]);
           setNews(EMPTY_NEWS);
         }
       } finally {
@@ -79,6 +73,50 @@ export default function Landing() {
     };
   }, []);
 
+  useEffect(() => {
+    let mounted = true;
+
+    if (loading) {
+      return () => {
+        mounted = false;
+      };
+    }
+
+    const handle = window.setTimeout(() => {
+      CATEGORIES.forEach((category) => {
+        setCategoryLoading((current) => ({ ...current, [category]: true }));
+
+        fetchLiveNews(category)
+          .then((categoryItems) => {
+            if (!mounted) return;
+
+            setNews((current) => ({
+              ...current,
+              [category]: categoryItems.slice(0, 4),
+            }));
+          })
+          .catch(() => {
+            if (!mounted) return;
+
+            setNews((current) => ({
+              ...current,
+              [category]: current[category] ?? [],
+            }));
+          })
+          .finally(() => {
+            if (!mounted) return;
+
+            setCategoryLoading((current) => ({ ...current, [category]: false }));
+          });
+      });
+    }, 0);
+
+    return () => {
+      mounted = false;
+      window.clearTimeout(handle);
+    };
+  }, [loading]);
+
   return (
     <main className="max-w-7xl mx-auto px-6 py-12 space-y-12">
       <Hero metrics={metrics} title="SignalScope AI" terminalHref="/terminal" />
@@ -92,18 +130,24 @@ export default function Landing() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {(news[category] ?? []).length === 0 && !loading ? (
+              {categoryLoading[category] && (news[category] ?? []).length === 0 ? (
+                <div className="col-span-full text-sm text-muted-foreground">
+                  Loading category feed...
+                </div>
+              ) : (news[category] ?? []).length === 0 && !loading ? (
                 <div className="col-span-full text-sm text-muted-foreground">No items found.</div>
               ) : (
                 (news[category] ?? []).map((item) => (
                   <article
                     key={item.id}
-                    className="bg-surface rounded-xl border border-border/60 overflow-hidden"
+                    className="content-auto bg-surface rounded-xl border border-border/60 overflow-hidden"
                   >
                     {item.image ? (
                       <img
                         src={item.image}
                         alt={item.headline}
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-36 object-cover"
                       />
                     ) : (
@@ -146,5 +190,15 @@ export default function Landing() {
         ))}
       </section>
     </main>
+  );
+}
+
+function groupItemsByCategory(items: NewsItem[]): Record<string, NewsItem[]> {
+  return CATEGORIES.reduce(
+    (acc, category) => {
+      acc[category] = items.filter((item) => item.category === category).slice(0, 4);
+      return acc;
+    },
+    {} as Record<string, NewsItem[]>,
   );
 }
