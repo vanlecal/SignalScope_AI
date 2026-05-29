@@ -80,7 +80,7 @@ export default function Landing() {
 
   return (
     <main className="max-w-7xl mx-auto px-6 py-12 space-y-12">
-      <Hero metrics={metrics} title="SignalScope AI" />
+      <Hero metrics={metrics} title="SignalScope AI" terminalHref="/terminal" />
 
       <section className="space-y-12">
         {CATEGORIES.map((category) => (

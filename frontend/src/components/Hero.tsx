@@ -3,7 +3,23 @@ import { ArrowRight, Radio, Sparkles } from "lucide-react";
 import orb from "@/assets/ai-orb.jpg";
 import type { DashboardMetrics } from "@/lib/api";
 
-export function Hero({ metrics, title }: { metrics: DashboardMetrics; title?: string }) {
+export function Hero({
+  metrics,
+  title,
+  terminalHref,
+}: {
+  metrics: DashboardMetrics;
+  title?: string;
+  terminalHref?: string;
+}) {
+  const openTerminal = () => {
+    if (!terminalHref) {
+      return;
+    }
+
+    window.open(terminalHref, "_blank", "noopener,noreferrer");
+  };
+
   return (
     <section className="relative overflow-hidden rounded-3xl border border-border/60 glass">
       <div className="absolute inset-0 grid-bg opacity-60" />
@@ -57,21 +73,31 @@ export function Hero({ metrics, title }: { metrics: DashboardMetrics; title?: st
             {metrics.description}
           </motion.p>
 
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.18 }}
-            className="flex flex-wrap gap-3"
-          >
-            <button className="group inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-gradient-to-br from-electric to-ai text-white font-medium text-sm ring-glow-blue hover:shadow-[0_0_30px_var(--color-electric)] transition-all">
-              <Radio className="h-4 w-4" />
-              Explore Live Feed
-              <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
-            </button>
-            <button className="inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-surface/80 border border-border text-foreground font-medium text-sm hover:bg-surface hover:border-electric/40 transition-all">
-              Start Monitoring
-            </button>
-          </motion.div>
+          {terminalHref ? (
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.18 }}
+              className="flex flex-wrap gap-3"
+            >
+              <button
+                type="button"
+                onClick={openTerminal}
+                className="group inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-gradient-to-br from-electric to-ai text-white font-medium text-sm ring-glow-blue hover:shadow-[0_0_30px_var(--color-electric)] transition-all"
+              >
+                <Radio className="h-4 w-4" />
+                Explore Live Feed
+                <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
+              </button>
+              <button
+                type="button"
+                onClick={openTerminal}
+                className="inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-surface/80 border border-border text-foreground font-medium text-sm hover:bg-surface hover:border-electric/40 transition-all"
+              >
+                Start Monitoring
+              </button>
+            </motion.div>
+          ) : null}
 
           {metrics.keywords && metrics.keywords.length > 0 && (
             <div className="mt-4 flex flex-wrap gap-2">
