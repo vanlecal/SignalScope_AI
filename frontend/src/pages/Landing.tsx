@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Hero } from "@/components/Hero";
 import { deriveDashboardMetrics, fetchLiveNews } from "@/lib/api";
+import { SIGNALSCOPE_LOGO } from "@/lib/branding";
 import type { DashboardMetrics } from "@/lib/api";
 import type { NewsItem } from "@/lib/mock-data";
 
@@ -106,8 +107,20 @@ export default function Landing() {
                         className="w-full h-36 object-cover"
                       />
                     ) : (
-                      <div className="w-full h-36 bg-background/40 grid place-items-center text-muted-foreground">
-                        No image
+                      <div className="w-full h-36 relative overflow-hidden bg-background/40">
+                        <div className="absolute inset-0 grid-bg opacity-40" />
+                        <div
+                          className="absolute inset-0"
+                          style={{
+                            background:
+                              "radial-gradient(circle at 30% 30%, rgba(0, 192, 255, 0.18), transparent 60%)",
+                          }}
+                        />
+                        <img
+                          src={SIGNALSCOPE_LOGO}
+                          alt="SignalScope AI logo"
+                          className="absolute inset-0 h-full w-full object-contain p-8"
+                        />
                       </div>
                     )}
 

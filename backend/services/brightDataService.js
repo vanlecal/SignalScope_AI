@@ -123,7 +123,7 @@ export const fetchBusinessNews = async (category = "All") => {
     // Parse Bright Data body
     const parsed = JSON.parse(response.data.body);
 
-    console.log("Parsed Bright Data:", parsed);
+    // console.log("Parsed Bright Data:", parsed);
 
     // Return category-focused items, while still normalizing images
     const cleanedNews = (parsed.news || [])
