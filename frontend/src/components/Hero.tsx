@@ -3,7 +3,7 @@ import { ArrowRight, Radio, Sparkles } from "lucide-react";
 import orb from "@/assets/ai-orb.jpg";
 import type { DashboardMetrics } from "@/lib/api";
 
-export function Hero({ metrics }: { metrics: DashboardMetrics }) {
+export function Hero({ metrics, title }: { metrics: DashboardMetrics; title?: string }) {
   return (
     <section className="relative overflow-hidden rounded-3xl border border-border/60 glass">
       <div className="absolute inset-0 grid-bg opacity-60" />
@@ -39,7 +39,13 @@ export function Hero({ metrics }: { metrics: DashboardMetrics }) {
             transition={{ delay: 0.05 }}
             className="text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight leading-[1.05]"
           >
-            AI-Powered <span className="gradient-text-ai">Market Intelligence</span>
+            {title ? (
+              title
+            ) : (
+              <>
+                AI-Powered <span className="gradient-text-ai">Market Intelligence</span>
+              </>
+            )}
           </motion.h1>
 
           <motion.p
