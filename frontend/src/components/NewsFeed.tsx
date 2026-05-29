@@ -1,5 +1,5 @@
-import { motion } from "framer-motion";
-import { ArrowUpRight, Clock, ImageOff, TrendingDown, TrendingUp, Minus } from "lucide-react";
+import { ArrowUpRight, Clock, TrendingDown, TrendingUp, Minus } from "lucide-react";
+import { SIGNALSCOPE_LOGO } from "@/lib/branding";
 import type { NewsItem } from "@/lib/mock-data";
 
 const SEV_DOT = {
@@ -102,40 +102,32 @@ export function NewsFeed({
           const Sent = sent.Icon;
           const isSel = selectedId === n.id;
           return (
-            <motion.button
+            <button
               key={n.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.04 }}
               onClick={() => onSelect(n)}
-              className={`group w-full text-left rounded-2xl p-5 glass border transition-all hover:border-electric/40 ${
+              className={`content-auto group w-full text-left rounded-2xl p-5 glass border transition-all hover:border-electric/40 ${
                 isSel ? "border-electric/60 ring-glow-blue" : "border-border/60"
               }`}
             >
               <div className="flex flex-col sm:flex-row gap-4">
                 {/* Thumbnail */}
                 <div className="relative shrink-0 w-full sm:w-32 h-24 rounded-xl overflow-hidden bg-gradient-to-br from-surface to-background ring-1 ring-border">
-                  {n.image ? (
-                    <img
-                      src={n.image}
-                      alt={n.headline}
-                      className="absolute inset-0 h-full w-full object-cover"
-                    />
-                  ) : (
-                    <>
-                      <div className="absolute inset-0 grid-bg opacity-40" />
-                      <div
-                        className="absolute inset-0"
-                        style={{
-                          background: `radial-gradient(circle at 30% 30%, ${n.sourceColor}30, transparent 60%)`,
-                        }}
-                      />
-                      <div className="absolute inset-0 grid place-items-center text-[10px] font-mono uppercase tracking-wider text-foreground/55">
-                        <ImageOff className="mr-1.5 h-3 w-3" />
-                        No image
-                      </div>
-                    </>
-                  )}
+                  <div className="absolute inset-0 grid-bg opacity-40" />
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      background: n.image
+                        ? "linear-gradient(135deg, rgba(0,0,0,0.05), rgba(0,0,0,0.35))"
+                        : `radial-gradient(circle at 30% 30%, ${n.sourceColor}30, transparent 60%)`,
+                    }}
+                  />
+                  <img
+                    src={n.image ?? SIGNALSCOPE_LOGO}
+                    alt={n.image ? n.headline : "SignalScope AI logo"}
+                    loading="lazy"
+                    decoding="async"
+                    className={`absolute inset-0 h-full w-full ${n.image ? "object-cover" : "object-contain p-4"}`}
+                  />
                   <div className="absolute bottom-2 left-2 text-[10px] font-mono uppercase tracking-wider text-foreground/80">
                     {n.category}
                   </div>
@@ -189,7 +181,7 @@ export function NewsFeed({
                   </div>
                 </div>
               </div>
-            </motion.button>
+            </button>
           );
         })}
       </div>

@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import {
   Flame,
   ShieldAlert,
@@ -44,12 +43,8 @@ export function MarketCards({ cards }: { cards: MarketCardData[] }) {
         const Icon = ICONS[i % ICONS.length] ?? Flame;
         const a = ACCENTS[c.accent];
         return (
-          <motion.div
+          <div
             key={c.label}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.06 }}
-            whileHover={{ y: -3 }}
             className={`group relative overflow-hidden rounded-2xl p-5 glass border ${a.border} transition-all hover:ring-1 hover:${a.ring}`}
           >
             <div
@@ -101,7 +96,7 @@ export function MarketCards({ cards }: { cards: MarketCardData[] }) {
                 className={a.text}
               />
             </svg>
-          </motion.div>
+          </div>
         );
       })}
     </div>

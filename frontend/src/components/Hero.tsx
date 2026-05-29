@@ -1,9 +1,24 @@
-import { motion } from "framer-motion";
 import { ArrowRight, Radio, Sparkles } from "lucide-react";
 import orb from "@/assets/ai-orb.jpg";
 import type { DashboardMetrics } from "@/lib/api";
 
-export function Hero({ metrics }: { metrics: DashboardMetrics }) {
+export function Hero({
+  metrics,
+  title,
+  terminalHref,
+}: {
+  metrics: DashboardMetrics;
+  title?: string;
+  terminalHref?: string;
+}) {
+  const openTerminal = () => {
+    if (!terminalHref) {
+      return;
+    }
+
+    window.open(terminalHref, "_blank", "noopener,noreferrer");
+  };
+
   return (
     <section className="relative overflow-hidden rounded-3xl border border-border/60 glass">
       <div className="absolute inset-0 grid-bg opacity-60" />
@@ -24,48 +39,45 @@ export function Hero({ metrics }: { metrics: DashboardMetrics }) {
 
       <div className="relative grid lg:grid-cols-[1fr_auto] gap-8 p-6 md:p-10 lg:p-14 items-center">
         <div className="space-y-6 max-w-2xl">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-mono uppercase tracking-wider bg-ai/10 border border-ai/30 text-ai"
-          >
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-mono uppercase tracking-wider bg-ai/10 border border-ai/30 text-ai">
             <Sparkles className="h-3 w-3" />
             Live AI Intelligence · v2.4
-          </motion.div>
+          </div>
 
-          <motion.h1
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.05 }}
-            className="text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight leading-[1.05]"
-          >
-            AI-Powered <span className="gradient-text-ai">Market Intelligence</span>
-          </motion.h1>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-semibold tracking-tight leading-[1.05]">
+            {title ? (
+              title
+            ) : (
+              <>
+                AI-Powered <span className="gradient-text-ai">Market Intelligence</span>
+              </>
+            )}
+          </h1>
 
-          <motion.p
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.12 }}
-            className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-xl"
-          >
+          <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-xl">
             {metrics.description}
-          </motion.p>
+          </p>
 
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.18 }}
-            className="flex flex-wrap gap-3"
-          >
-            <button className="group inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-gradient-to-br from-electric to-ai text-white font-medium text-sm ring-glow-blue hover:shadow-[0_0_30px_var(--color-electric)] transition-all">
-              <Radio className="h-4 w-4" />
-              Explore Live Feed
-              <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
-            </button>
-            <button className="inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-surface/80 border border-border text-foreground font-medium text-sm hover:bg-surface hover:border-electric/40 transition-all">
-              Start Monitoring
-            </button>
-          </motion.div>
+          {terminalHref ? (
+            <div className="flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={openTerminal}
+                className="group inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-gradient-to-br from-electric to-ai text-white font-medium text-sm ring-glow-blue hover:shadow-[0_0_30px_var(--color-electric)] transition-all"
+              >
+                <Radio className="h-4 w-4" />
+                Explore Live Feed
+                <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
+              </button>
+              <button
+                type="button"
+                onClick={openTerminal}
+                className="inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-surface/80 border border-border text-foreground font-medium text-sm hover:bg-surface hover:border-electric/40 transition-all"
+              >
+                Start Monitoring
+              </button>
+            </div>
+          ) : null}
 
           {metrics.keywords && metrics.keywords.length > 0 && (
             <div className="mt-4 flex flex-wrap gap-2">
@@ -82,22 +94,19 @@ export function Hero({ metrics }: { metrics: DashboardMetrics }) {
         </div>
 
         {/* AI Orb */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.1, duration: 0.8 }}
-          className="relative hidden md:block w-[260px] lg:w-[320px] aspect-square shrink-0"
-        >
+        <div className="relative hidden md:block w-[260px] lg:w-[320px] aspect-square shrink-0">
           <div className="absolute inset-0 rounded-full bg-gradient-to-br from-electric/40 to-ai/40 blur-3xl animate-pulse-glow" />
           <img
             src={orb}
             alt=""
             width={1024}
             height={1024}
+            loading="eager"
+            decoding="async"
             className="relative w-full h-full object-cover rounded-full mix-blend-screen"
           />
           <div className="absolute inset-0 rounded-full ring-1 ring-electric/30" />
-        </motion.div>
+        </div>
       </div>
 
       {/* Ticker tape */}

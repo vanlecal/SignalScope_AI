@@ -83,6 +83,10 @@ import axios from "axios";
 
 import { normalizeImage } from "../utils/newsSanitizer.js";
 
+const IMAGE_RESOLUTION_CACHE = new Map();
+const IMAGE_RESOLUTION_TTL_MS = 30 * 60 * 1000;
+const IMAGE_RESOLUTION_TIMEOUT_MS = 2500;
+
 const CATEGORY_ALIASES = {
   macro: "Macro",
   "macro / rates": "Macro",
@@ -123,23 +127,16 @@ export const fetchBusinessNews = async (category = "All") => {
     // Parse Bright Data body
     const parsed = JSON.parse(response.data.body);
 
-    console.log("Parsed Bright Data:", parsed);
+    // console.log("Parsed Bright Data:", parsed);
 
     // Return category-focused items, while still normalizing images
     const cleanedNews = (parsed.news || [])
       .filter((article) => article && article.title && article.link)
-      .map((article) => ({
-        title: article.title,
-        link: article.link,
-        source: article.source,
-        source_logo: normalizeImage(article.source_logo),
-        description: article.description,
-        date: article.date,
-        image: normalizeImage(article.image),
-        rank: article.rank,
-        global_rank: article.global_rank,
-        category: normalizedCategory === "All" ? classifyArticle(article) : normalizedCategory,
-      }));
+      .map((article) => mapFeedArticle(article, normalizedCategory));
+
+    await Promise.all(
+      cleanedNews.map((article) => hydrateArticleImage(article)),
+    );
 
     return cleanedNews;
   } catch (error) {
@@ -265,18 +262,13 @@ export const getBusinessNews = async (event) => {
           source.includes(trusted.toLowerCase()),
         );
       })
-      .map((article) => ({
-        title: article.title,
-        link: article.link,
-        source: article.source,
-        description: article.description,
-        date: article.date,
+      .map((article) => mapAnalysisArticle(article));
 
-        // ONLY return image URL if available
-        image: article.image_link || null,
-      }));
+    await Promise.all(
+      cleanedNews.map((article) => hydrateArticleImage(article)),
+    );
 
-    console.log("Cleaned News:", cleanedNews);
+    // console.log("Cleaned News:", cleanedNews);
 
     return cleanedNews;
   } catch (error) {
@@ -285,3 +277,146 @@ export const getBusinessNews = async (event) => {
     throw error;
   }
 };
+
+function mapFeedArticle(article, normalizedCategory) {
+  return {
+    title: article.title,
+    link: article.link,
+    source: article.source,
+    source_logo: normalizeImage(article.source_logo),
+    description: article.description,
+    date: article.date,
+    image:
+      normalizeImage(article.image) ||
+      normalizeImage(article.image_link) ||
+      normalizeImage(article.source_logo),
+    rank: article.rank,
+    global_rank: article.global_rank,
+    category:
+      normalizedCategory === "All"
+        ? classifyArticle(article)
+        : normalizedCategory,
+  };
+}
+
+function mapAnalysisArticle(article) {
+  return {
+    title: article.title,
+    link: article.link,
+    source: article.source,
+    description: article.description,
+    date: article.date,
+    image:
+      normalizeImage(article.image_link) ||
+      normalizeImage(article.image) ||
+      null,
+  };
+}
+
+async function hydrateArticleImage(article) {
+  if (normalizeImage(article.image)) {
+    return article;
+  }
+
+  const cachedImage = getCachedImage(article.link);
+  if (cachedImage) {
+    article.image = cachedImage;
+    return article;
+  }
+
+  const resolvedImage = await resolvePreviewImage(article.link);
+  if (resolvedImage) {
+    article.image = resolvedImage;
+    setCachedImage(article.link, resolvedImage);
+  }
+
+  return article;
+}
+
+function getCachedImage(link) {
+  const cached = IMAGE_RESOLUTION_CACHE.get(link);
+
+  if (!cached) {
+    return null;
+  }
+
+  if (cached.expiresAt <= Date.now()) {
+    IMAGE_RESOLUTION_CACHE.delete(link);
+    return null;
+  }
+
+  return cached.image;
+}
+
+function setCachedImage(link, image) {
+  IMAGE_RESOLUTION_CACHE.set(link, {
+    image,
+    expiresAt: Date.now() + IMAGE_RESOLUTION_TTL_MS,
+  });
+}
+
+async function resolvePreviewImage(link) {
+  if (!link) {
+    return null;
+  }
+
+  try {
+    const response = await axios.get(link, {
+      timeout: IMAGE_RESOLUTION_TIMEOUT_MS,
+      responseType: "text",
+      maxContentLength: 200_000,
+      maxBodyLength: 200_000,
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+        Accept:
+          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      },
+      validateStatus: (status) => status >= 200 && status < 400,
+    });
+
+    const html = typeof response.data === "string" ? response.data : "";
+    return extractPreviewImageFromHtml(html, link);
+  } catch {
+    return null;
+  }
+}
+
+function extractPreviewImageFromHtml(html, pageUrl) {
+  if (!html) {
+    return null;
+  }
+
+  const patterns = [
+    /<meta[^>]+property=["']og:image(?::secure_url)?["'][^>]+content=["']([^"']+)["']/i,
+    /<meta[^>]+name=["']twitter:image(?::src)?["'][^>]+content=["']([^"']+)["']/i,
+    /<meta[^>]+property=["']twitter:image(?::src)?["'][^>]+content=["']([^"']+)["']/i,
+  ];
+
+  for (const pattern of patterns) {
+    const match = html.match(pattern);
+    if (match?.[1]) {
+      return normalizeResolvedImageUrl(match[1], pageUrl);
+    }
+  }
+
+  return null;
+}
+
+function normalizeResolvedImageUrl(candidate, pageUrl) {
+  if (!candidate) {
+    return null;
+  }
+
+  const trimmed = candidate.trim();
+
+  if (!trimmed || trimmed.startsWith("data:image")) {
+    return null;
+  }
+
+  try {
+    return new URL(trimmed, pageUrl).toString();
+  } catch {
+    return normalizeImage(trimmed);
+  }
+}

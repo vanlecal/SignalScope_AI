@@ -1,5 +1,6 @@
 import { Search, Sparkles, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { SIGNALSCOPE_LOGO } from "@/lib/branding";
 
 export function Navbar({
   searchValue,
@@ -39,9 +40,13 @@ export function Navbar({
       <div className="flex items-center h-16 px-4 md:px-6 gap-4">
         {/* Logo */}
         <div className="flex items-center gap-2.5 shrink-0">
-          <div className="relative h-9 w-9 rounded-xl bg-gradient-to-br from-electric to-ai grid place-items-center ring-glow-blue">
-            <Sparkles className="h-4.5 w-4.5 text-white" strokeWidth={2.5} />
-            <span className="absolute inset-0 rounded-xl bg-gradient-to-br from-electric to-ai blur-xl opacity-40 -z-10" />
+          <div className="relative h-9 w-9 overflow-hidden rounded-xl bg-gradient-to-br from-electric/20 to-ai/20 ring-1 ring-white/10 ring-glow-blue">
+            <img
+              src={SIGNALSCOPE_LOGO}
+              alt="SignalScope AI"
+              className="h-full w-full object-contain p-1.5"
+            />
+            <span className="absolute inset-0 rounded-xl bg-gradient-to-br from-electric to-ai blur-xl opacity-25 -z-10" />
           </div>
           <div className="hidden sm:block">
             <div className="text-sm font-semibold tracking-tight leading-none">SignalScope</div>
