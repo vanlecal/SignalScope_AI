@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import { ArrowUpRight, Clock, TrendingDown, TrendingUp, Minus } from "lucide-react";
 import { SIGNALSCOPE_LOGO } from "@/lib/branding";
 import type { NewsItem } from "@/lib/mock-data";
@@ -103,11 +102,8 @@ export function NewsFeed({
           const Sent = sent.Icon;
           const isSel = selectedId === n.id;
           return (
-            <motion.button
+            <button
               key={n.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.04 }}
               onClick={() => onSelect(n)}
               className={`content-auto group w-full text-left rounded-2xl p-5 glass border transition-all hover:border-electric/40 ${
                 isSel ? "border-electric/60 ring-glow-blue" : "border-border/60"
@@ -185,7 +181,7 @@ export function NewsFeed({
                   </div>
                 </div>
               </div>
-            </motion.button>
+            </button>
           );
         })}
       </div>
