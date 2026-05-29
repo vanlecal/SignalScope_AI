@@ -268,7 +268,7 @@ export const getBusinessNews = async (event) => {
       cleanedNews.map((article) => hydrateArticleImage(article)),
     );
 
-    console.log("Cleaned News:", cleanedNews);
+    // console.log("Cleaned News:", cleanedNews);
 
     return cleanedNews;
   } catch (error) {
