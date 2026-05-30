@@ -133,9 +133,9 @@ export default function App() {
   }, [visibleItems]);
 
   return (
-    <div className="dark min-h-screen text-foreground">
+    <div className="dark min-h-screen overflow-x-hidden text-foreground">
       <Navbar searchValue={searchQuery} onSearchChange={setSearchQuery} />
-      <div className="flex">
+      <div className="flex min-w-0">
         <Sidebar />
         <main className="flex-1 min-w-0">
           <div className="mx-auto max-w-[1600px] space-y-6 p-4 md:p-6 lg:p-8">

@@ -37,7 +37,7 @@ export function Navbar({
         scrolled ? "glass-strong border-border/70" : "border-transparent bg-background/40"
       }`}
     >
-      <div className="flex items-center h-16 px-4 md:px-6 gap-4">
+      <div className="flex flex-col gap-3 px-4 py-3 md:h-16 md:flex-row md:items-center md:gap-4 md:px-6 md:py-0">
         {/* Logo */}
         <div className="flex items-center gap-2.5 shrink-0">
           <div className="relative h-9 w-9 overflow-hidden rounded-xl bg-gradient-to-br from-electric/20 to-ai/20 ring-1 ring-white/10 ring-glow-blue">
@@ -57,7 +57,7 @@ export function Navbar({
         </div>
 
         {/* Search */}
-        <div className="flex-1 max-w-xl mx-auto">
+        <div className="w-full md:flex-1 md:max-w-xl md:mx-auto">
           <div className="group relative">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-electric transition-colors" />
             <input
@@ -66,7 +66,7 @@ export function Navbar({
               value={searchValue}
               onChange={(event) => onSearchChange(event.target.value)}
               placeholder="Search companies, markets, or global events…"
-              className="w-full h-10 pl-10 pr-20 rounded-xl bg-surface/80 border border-border text-sm placeholder:text-muted-foreground/70 focus:outline-none focus:border-electric/50 focus:ring-2 focus:ring-electric/20 transition-all"
+              className="w-full h-10 pl-10 pr-12 sm:pr-20 rounded-xl bg-surface/80 border border-border text-sm placeholder:text-muted-foreground/70 focus:outline-none focus:border-electric/50 focus:ring-2 focus:ring-electric/20 transition-all"
             />
             <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
               {searchValue ? (
@@ -90,7 +90,7 @@ export function Navbar({
         </div>
 
         {/* Right */}
-        <div className="hidden sm:flex items-center gap-2 shrink-0 px-3 py-1.5 rounded-xl bg-success/10 border border-success/30">
+        <div className="hidden sm:flex items-center gap-2 shrink-0 px-3 py-1.5 rounded-xl bg-success/10 border border-success/30 md:self-auto">
           <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
           <span className="text-[10px] font-mono uppercase tracking-[0.15em] text-success">
             Live Market

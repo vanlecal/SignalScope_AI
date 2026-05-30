@@ -123,7 +123,7 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <main className="flex-grow max-w-7xl mx-auto px-6 py-16 space-y-12">
+      <main className="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-16 space-y-12">
         <Hero metrics={metrics} title="SignalScope AI" terminalHref="/terminal" />
 
         {/* Companion card: live-loop GIF matching Hero visual style */}
