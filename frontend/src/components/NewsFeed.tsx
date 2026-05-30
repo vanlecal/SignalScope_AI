@@ -39,7 +39,7 @@ export function NewsFeed({
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-lg font-semibold tracking-tight flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-success animate-pulse" />
@@ -49,13 +49,13 @@ export function NewsFeed({
             Updated 4s ago · 2,847 sources monitored
           </p>
         </div>
-        <div className="flex gap-1 text-xs font-mono">
+        <div className="flex flex-wrap gap-2 text-xs font-mono sm:justify-end">
           {categories.map((t) => (
             <button
               key={t}
               type="button"
               onClick={() => onCategoryChange(t)}
-              className={`px-3 py-1.5 rounded-lg transition-colors ${
+              className={`whitespace-nowrap px-3 py-1.5 rounded-lg transition-colors ${
                 activeCategory === t
                   ? "bg-electric/15 text-electric border border-electric/30"
                   : "text-muted-foreground hover:text-foreground hover:bg-white/[0.04]"
